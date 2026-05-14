@@ -104,18 +104,38 @@ export class GitService {
     }
   }
 
-  async commit(taskId: string, description: string): Promise<void> {
+  async commit(taskId: string, description: string): Promise<string> {
     console.log(`[GitService] Committing changes...`);
     await this.git.add('./*');
     const commitMessage = `feat: ${taskId} - ${description}`;
     await this.git.commit(commitMessage);
+    // Return the commit hash
+    const hash = await this.git.revparse(['HEAD']);
+    return hash.trim();
   }
 
-  async push(branchName: string): Promise<void> {
+  /**
+   * Pushes the branch and returns the full URL to the commit on GitHub.
+   * e.g. https://github.com/org/repo/commit/<hash>
+   */
+  async push(branchName: string, commitHash?: string): Promise<string | null> {
     const remoteUrl = this.getAuthUrl();
     await this.git.remote(['set-url', 'origin', remoteUrl]);
     console.log(`[GitService] Pushing branch ${branchName} to origin...`);
     await this.git.push('origin', branchName, ['--set-upstream']);
     console.log(`[GitService] Push complete.`);
+
+    if (!commitHash) return null;
+
+    try {
+      // Build a clean URL without credentials for the commit link
+      const urlObj = new URL(this.repoUrl);
+      urlObj.username = '';
+      urlObj.password = '';
+      const cleanUrl = urlObj.toString().replace(/\.git$/, '');
+      return `${cleanUrl}/commit/${commitHash}`;
+    } catch {
+      return null;
+    }
   }
 }

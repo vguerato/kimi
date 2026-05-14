@@ -138,16 +138,25 @@ export const taskWorker = new Worker('agent-tasks', async (job: Job<DelegateSubt
 
     // 5. Commit and push changes made by the agent
     console.log(`[Worker] Committing and pushing changes for task ${data.taskId}...`);
-    await gitService.commit(data.taskId, data.title || data.taskId);
-    await gitService.push(data.branch);
+    const commitHash = await gitService.commit(data.taskId, data.title || data.taskId);
+    const commitUrl = await gitService.push(data.branch, commitHash);
 
-    // 6. Update task status in DB to "em espera"
+    // 6. Update task status in DB to "em espera" (and persist commit URL if available)
     await executeQuery(
-      `UPDATE tasks SET status = 'em espera', updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
-      [data.taskId]
+      `UPDATE tasks SET status = 'em espera', commit_url = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      [commitUrl ?? null, data.taskId]
     );
 
-    // 7. Move the Jira subtask to "Em análise" (review column)
+    // 7. Post commit link as a comment on the Jira subtask
+    if (commitUrl) {
+      console.log(`[Worker] Posting commit link to Jira issue ${data.taskId}: ${commitUrl}`);
+      await jiraService.addComment(
+        data.taskId,
+        `✅ Implementação concluída pelo agente Kiro.\n\nCommit: ${commitUrl}`
+      );
+    }
+
+    // 8. Move the Jira subtask to "Em análise" (review column)
     console.log(`[Worker] Moving Jira issue ${data.taskId} to "Em análise"...`);
     await jiraService.updateTaskStatus(data.taskId, 'Em análise');
 

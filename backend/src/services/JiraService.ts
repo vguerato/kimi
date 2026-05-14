@@ -259,6 +259,33 @@ export class JiraService {
     }
   }
 
+  /**
+   * Adds a comment to a Jira issue.
+   */
+  async addComment(issueKey: string, body: string): Promise<void> {
+    const config = await this.getJiraConfig();
+    if (!config.jira_url || !config.jira_email || !config.jira_token) {
+      console.warn('[JiraService] Missing Jira credentials — skipping addComment.');
+      return;
+    }
+
+    const authHeader = this.getAuthHeader(config.jira_email, config.jira_token);
+
+    try {
+      await axios.post(
+        `${config.jira_url}/rest/api/2/issue/${issueKey}/comment`,
+        { body },
+        {
+          headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+          timeout: 10000,
+        }
+      );
+      console.log(`[JiraService] Comment added to issue ${issueKey}.`);
+    } catch (err: any) {
+      console.error(`[JiraService] Failed to add comment to ${issueKey}:`, err?.response?.data || err?.message);
+    }
+  }
+
   async updateTaskStatus(issueKey: string, statusName: string) {    const config = await this.getJiraConfig();
     if (!config.jira_url || !config.jira_email || !config.jira_token) return;
 

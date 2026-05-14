@@ -179,6 +179,18 @@ function TasksPage({ tasks, onDelete, onRetry }: { tasks: any[]; onDelete: (id: 
                     )}
                     <p className="text-xs text-default-500 truncate">{task.branch}</p>
                     <p className="text-xs text-default-400">{new Date(task.updated_at).toLocaleString('pt-BR')}</p>
+                    {task.commit_url && (
+                      <a
+                        href={task.commit_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-green-400 hover:text-green-300 transition-colors truncate"
+                        title={task.commit_url}
+                      >
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><line x1="3" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="21" y2="12"/></svg>
+                        Ver commit
+                      </a>
+                    )}
                   </Card>
                 ))}
                 {colTasks.length === 0 && (
@@ -207,6 +219,18 @@ function TasksPage({ tasks, onDelete, onRetry }: { tasks: any[]; onDelete: (id: 
                 <div>
                   <p className="text-sm font-medium">{task.branch}</p>
                   <p className="text-xs text-default-400">Repo: {task.repository} · Parent: {task.parent_id}</p>
+                  {task.commit_url && (
+                    <a
+                      href={task.commit_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-green-400 hover:text-green-300 transition-colors"
+                      title={task.commit_url}
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><line x1="3" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="21" y2="12"/></svg>
+                      Ver commit
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">

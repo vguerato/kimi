@@ -43,7 +43,12 @@ export function dbInit(): Promise<void> {
         // Migration: add 'model' column if it doesn't exist yet (for existing DBs)
         db.run(`ALTER TABLE tasks ADD COLUMN model TEXT`, () => {
           // Ignore error — column may already exist
-          resolve();
+
+          // Migration: add 'commit_url' column if it doesn't exist yet
+          db.run(`ALTER TABLE tasks ADD COLUMN commit_url TEXT`, () => {
+            // Ignore error — column may already exist
+            resolve();
+          });
         });
       });
     });

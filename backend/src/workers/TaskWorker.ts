@@ -39,6 +39,8 @@ export async function requeuePendingTasks(): Promise<void> {
         {
           taskId: task.id,
           parentId: task.parent_id,
+          parentTitle: '',          // Not stored locally — agent will use git context
+          parentDescription: '',    // Not stored locally — agent will use git context
           repository: task.repository,
           title: task.id,          // Fallback — worker uses taskId if title is missing
           description: '',          // Worker will proceed; agent will use git context
@@ -70,6 +72,8 @@ export async function requeuePendingTasks(): Promise<void> {
 export interface DelegateSubtaskData {
   taskId: string;
   parentId: string;
+  parentTitle: string;
+  parentDescription: string;
   repository: string;
   title: string;
   description: string;

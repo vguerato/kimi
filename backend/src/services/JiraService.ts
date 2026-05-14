@@ -134,17 +134,17 @@ export class JiraService {
 
     const summary = issue?.fields?.summary || '';
 
-    // Parse prefix: [balance] task name
+    // Parse optional prefix: [balance] task name
     const prefixMatch = summary.match(/^\[(.*?)\]/);
-    if (!prefixMatch) {
-      console.log(`[JiraService] Task ${issue.key} has no repository prefix. Skipping.`);
-      return;
-    }
-
-    const repository = prefixMatch[1].trim().toLowerCase();
+    const parentRepository: string | null = prefixMatch ? prefixMatch[1].trim().toLowerCase() : null;
     const parentId = issue.key;
-    const slugTitle = summary.replace(/\[.*?\]\s*/, '').replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().slice(0, 50);
-    const branchName = `feature/${parentId}-${slugTitle}`;
+    const parentCleanTitle = prefixMatch ? summary.replace(/^\[.*?\]\s*/, '').trim() : summary.trim();
+    const parentSlug = parentCleanTitle.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().slice(0, 50);
+    const defaultBranchName = `feature/${parentId}-${parentSlug}`;
+
+    // Capture parent task context to pass down to sub-task agents
+    const parentTitle: string = parentCleanTitle;
+    const parentDescription: string = issue?.fields?.description || '';
 
     const config = await this.getJiraConfig();
     if (!config.jira_url || !config.jira_email || !config.jira_token) {
@@ -184,29 +184,57 @@ export class JiraService {
         const stSummary: string = stData.fields?.summary || st.key;
         const stDescription: string = stData.fields?.description || '';
 
+        // Repository prefix resolution:
+        // 1. Subtask's own [prefix] takes highest priority
+        // 2. Falls back to parent's [prefix] if present
+        // 3. Skips if neither provides a repository reference
+        const stPrefixMatch = stSummary.match(/^\[(.*?)\]/);
+        const stRepository: string | null = stPrefixMatch
+          ? stPrefixMatch[1].trim().toLowerCase()
+          : parentRepository;
+
+        if (!stRepository) {
+          console.log(`[JiraService] Skipping ${st.key} — no repository prefix found in subtask or parent task.`);
+          continue;
+        }
+
+        const stCleanTitle: string = stPrefixMatch
+          ? stSummary.replace(/^\[.*?\]\s*/, '').trim()
+          : stSummary;
+        const stSlug = stCleanTitle.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase().slice(0, 50);
+        const stBranch = stPrefixMatch
+          ? `feature/${parentId}-${stSlug}`
+          : defaultBranchName;
+
+        if (stPrefixMatch) {
+          console.log(`[JiraService] Subtask ${st.key} overrides repository to "${stRepository}" via its own prefix.`);
+        }
+
         // Upsert into our DB — avoid duplicating if webhook fires twice
         await executeQuery(
           `INSERT INTO tasks (id, parent_id, repository, branch, status)
            VALUES (?, ?, ?, ?, ?)
            ON CONFLICT(id) DO UPDATE SET status = CASE WHEN status = 'error' THEN 'em fila' ELSE status END`,
-          [st.key, parentId, repository, branchName, 'em fila']
+          [st.key, parentId, stRepository, stBranch, 'em fila']
         );
 
         // Enqueue to BullMQ
         await taskQueue.add('agent-task', {
           taskId: st.key,
           parentId,
-          repository,
-          title: stSummary,
+          parentTitle,
+          parentDescription,
+          repository: stRepository,
+          title: stCleanTitle,
           description: stDescription,
-          branch: branchName
+          branch: stBranch
         }, {
           jobId: st.key, // Prevent duplicate jobs for the same subtask
           removeOnComplete: true,
           removeOnFail: false,
         });
 
-        console.log(`[JiraService] Enqueued subtask ${st.key} ("${stSummary}") → repo: ${repository}, branch: ${branchName}`);
+        console.log(`[JiraService] Enqueued subtask ${st.key} ("${stCleanTitle}") → repo: ${stRepository}, branch: ${stBranch}`);
       } catch (err: any) {
         console.error(`[JiraService] Error processing subtask ${st.key}:`, err?.message || err);
       }

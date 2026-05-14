@@ -1,18 +1,69 @@
-import { GoogleGenAI } from '@google/genai';
-import { exec } from 'child_process';
-import util from 'util';
-import fs from 'fs';
-import path from 'path';
-import { DelegateSubtaskData } from '../workers/TaskWorker';
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { tool } from "@langchain/core/tools";
+import { HumanMessage, SystemMessage, ToolMessage, AIMessage } from "@langchain/core/messages";
+import { exec } from "child_process";
+import util from "util";
+import fs from "fs";
+import path from "path";
+import { z } from "zod";
+import { GoogleGenAI } from "@google/genai";
+import { DelegateSubtaskData } from "../workers/TaskWorker";
 
 const execAsync = util.promisify(exec);
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+/**
+ * Fetches the list of available Gemini models via the official @google/genai SDK.
+ * Filters to models that support generateContent and whose names start with "gemini-".
+ * Falls back to the configured default model if the call fails.
+ */
+async function fetchAvailableModels(): Promise<string[]> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  const defaultModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 
+  if (!apiKey) {
+    console.warn('[AgentService] GEMINI_API_KEY not set — cannot fetch model list.');
+    return [defaultModel];
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const models: string[] = [];
+
+    // ai.models.list() returns a Promise<Pager> — await it first, then iterate
+    const pager = await ai.models.list();
+    for await (const model of pager) {
+      const name: string = ((model as any).name || '').replace(/^models\//, '');
+      const methods: string[] = (model as any).supportedGenerationMethods || [];
+
+      if (name.startsWith('gemini-') && methods.includes('generateContent')) {
+        models.push(name);
+      }
+    }
+
+    if (models.length === 0) {
+      console.warn('[AgentService] No generateContent-capable Gemini models returned by SDK.');
+      return [defaultModel];
+    }
+
+    console.log(`[AgentService] Fetched ${models.length} available model(s) via @google/genai SDK: ${models.join(', ')}`);
+    return models;
+  } catch (err: any) {
+    console.error('[AgentService] Failed to fetch model list via SDK:', err?.message || err);
+    return [defaultModel];
+  }
+}
+
+/**
+ * Sleeps for the given number of milliseconds.
+ */
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+/**
+ * Extracts the retry delay in milliseconds from a 429 error, if present.
+ * Gemini API returns retryDelay as e.g. "45s" or "15.5s" in errorDetails.
+ */
 function extractRetryDelayMs(err: any): number | null {
   try {
     const details: any[] = err?.errorDetails || [];
@@ -22,300 +73,201 @@ function extractRetryDelayMs(err: any): number | null {
         if (!isNaN(seconds)) return Math.ceil(seconds * 1000);
       }
     }
-  } catch { }
+  } catch {}
   return null;
 }
 
-// ─── Model listing ────────────────────────────────────────────────────────────
+/**
+ * Invokes the LLM with automatic retry on 429 rate-limit errors,
+ * respecting the retryDelay returned by the API.
+ */
+async function invokeWithRetry(llm: any, messages: any[], maxRetries = 5): Promise<AIMessage> {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await llm.invoke(messages);
+    } catch (err: any) {
+      const is429 = err?.status === 429 || String(err?.message).includes('429');
+      if (!is429 || attempt >= maxRetries) throw err;
 
-async function fetchAvailableModels(): Promise<string[]> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  const defaultModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-
-  if (!apiKey) {
-    console.warn('[AgentService] GEMINI_API_KEY not set — using default model.');
-    return [defaultModel];
-  }
-
-  try {
-    const ai = new GoogleGenAI({ apiKey });
-    const items: any[] = [];
-
-    for await (const model of await ai.models.list()) {
-      items.push(model);
+      attempt++;
+      const delayMs = extractRetryDelayMs(err) ?? Math.min(60000, 10000 * attempt);
+      console.warn(`[AgentService] Rate limited (429). Retrying in ${delayMs / 1000}s (attempt ${attempt}/${maxRetries})...`);
+      await sleep(delayMs + 1000); // +1s buffer
     }
-
-    const models = items
-      .filter(m => {
-        const name: string = m.name || '';
-        const actions: string[] = m.supportedActions || m.supportedGenerationMethods || [];
-        return (
-          name.includes('gemini-') &&
-          (actions.includes('generateContent') || actions.includes('GENERATE_CONTENT'))
-        );
-      })
-      .map(m => (m.name as string).replace(/^models\//, ''));
-
-    if (models.length === 0) {
-      console.warn(`[AgentService] No generateContent models found. Using default.`);
-      return [defaultModel];
-    }
-
-    console.log(`[AgentService] Available models: ${models.join(', ')}`);
-    return models;
-  } catch (err: any) {
-    console.error('[AgentService] Failed to list models:', err?.message || err);
-    return [defaultModel];
   }
 }
-
-// ─── Model selector ───────────────────────────────────────────────────────────
 
 export class AgentService {
   private repoPath: string;
   private taskData: DelegateSubtaskData;
-  private ai: GoogleGenAI;
-  private model: string;
+  private llm: ChatGoogleGenerativeAI;
 
   constructor(repoPath: string, taskData: DelegateSubtaskData, model?: string) {
     this.repoPath = repoPath;
     this.taskData = taskData;
-    this.model = model || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
-    this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
-    console.log(`[AgentService] Using model: ${this.model}`);
+    
+    const selectedModel = model || process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    console.log(`[AgentService] Using model: ${selectedModel}`);
+
+    this.llm = new ChatGoogleGenerativeAI({
+      model: selectedModel,
+      temperature: 0,
+      apiKey: process.env.GEMINI_API_KEY,
+    });
   }
 
-  /** Select the best available model for the given task using the LLM itself. */
+  /**
+   * Fetches available models from the Google AI API, then consults the LLM
+   * to determine the most appropriate one for the given task.
+   * Returns the model name chosen by the LLM.
+   */
   static async selectModelForTask(taskData: DelegateSubtaskData): Promise<string> {
-    const defaultModel = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+    const defaultModel = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
 
     try {
       console.log(`[AgentService] Fetching available models for task ${taskData.taskId}...`);
       const availableModels = await fetchAvailableModels();
 
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+      console.log(`[AgentService] Selecting best model for task ${taskData.taskId}...`);
 
-      const prompt = `You are a task routing assistant. Select the most appropriate AI model for the task below.
+      // Use the default/fast model just for the model-selection prompt
+      const selectorLlm = new ChatGoogleGenerativeAI({
+        model: defaultModel,
+        temperature: 0,
+        apiKey: process.env.GEMINI_API_KEY,
+      });
+
+      const prompt = `You are a task routing assistant. Based on the task below, choose the most appropriate AI model to execute it.
 
 Available models:
 ${availableModels.map((m, i) => `${i + 1}. ${m}`).join('\n')}
 
-Rules:
-- Prefer "flash" variants for simple tasks (CRUD, boilerplate, small fixes).
-- Prefer "pro" or higher variants for complex tasks (architecture, algorithms, deep refactoring).
+General guidance:
+- Prefer "flash" variants for simple, fast tasks (CRUD, boilerplate, small bug fixes).
+- Prefer "pro" or "thinking" variants for complex tasks (architecture changes, intricate algorithms, deep refactoring).
+- Choose the most capable model that is justified by the task complexity — avoid over-engineering.
 
-Task:
+Parent task context:
+- Parent ID: ${taskData.parentId}
+- Parent Title: ${taskData.parentTitle || '(not provided)'}
+- Parent Description: ${taskData.parentDescription || '(not provided)'}
+
+Sub-task to execute:
 - ID: ${taskData.taskId}
 - Title: ${taskData.title}
-- Description: ${taskData.description || '(none)'}
+- Description: ${taskData.description || '(no description provided)'}
 
-Reply with ONLY the exact model name, nothing else.`;
+Respond with ONLY the model name, exactly as listed above. No explanation, no punctuation — just the model name.`;
 
-      const response = await ai.models.generateContent({
-        model: defaultModel,
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      });
+      const response = await invokeWithRetry(selectorLlm, [new HumanMessage(prompt)]);
+      const chosen = (typeof response.content === 'string' ? response.content : String(response.content)).trim();
 
-      const chosen = (response.text ?? '').trim();
-      const exact = availableModels.find(m => m === chosen);
-      if (exact) return exact;
+      // Exact match
+      if (availableModels.includes(chosen)) {
+        console.log(`[AgentService] Model selected for task ${taskData.taskId}: ${chosen}`);
+        return chosen;
+      }
 
-      const partial = availableModels.find(m => chosen.includes(m) || m.includes(chosen));
-      if (partial) return partial;
+      // Partial match in case the LLM added extra text
+      const matched = availableModels.find(m => chosen.includes(m) || m.includes(chosen));
+      if (matched) {
+        console.log(`[AgentService] Model selected (partial match) for task ${taskData.taskId}: ${matched}`);
+        return matched;
+      }
 
-      console.warn(`[AgentService] Model "${chosen}" not in list — using default.`);
+      console.warn(`[AgentService] LLM returned unknown model "${chosen}", falling back to default.`);
       return defaultModel;
     } catch (err) {
-      console.error(`[AgentService] Model selection failed:`, err);
+      console.error(`[AgentService] Model selection failed, using default:`, err);
       return defaultModel;
     }
   }
 
-  // ─── Repository context ──────────────────────────────────────────────────
-
-  private async shell(cmd: string, maxChars = 6000): Promise<string> {
-    try {
-      const { stdout, stderr } = await execAsync(cmd, { cwd: this.repoPath });
-      const out = (stdout + (stderr ? `\nSTDERR: ${stderr}` : '')).trim();
-      return out.length > maxChars ? out.slice(0, maxChars) + '\n…(truncated)' : out;
-    } catch (e: any) {
-      return `(command failed: ${e.message})`;
-    }
+  private getTools() {
+    return [
+      tool(
+        async ({ command }) => {
+          try {
+            const { stdout, stderr } = await execAsync(command, { cwd: this.repoPath });
+            return stdout + (stderr ? `\nStderr: ${stderr}` : "");
+          } catch (error: any) {
+            return `Error executing command: ${error.message}`;
+          }
+        },
+        {
+          name: "execute_terminal_command",
+          description: "Executes a bash command in the repository directory. Useful for finding files, reading files with 'cat', or running tests.",
+          schema: z.object({ command: z.string().describe("The bash command to run") }),
+        }
+      ),
+      tool(
+        async ({ filePath, content }) => {
+          try {
+            const fullPath = path.join(this.repoPath, filePath.trim());
+            fs.writeFileSync(fullPath, content);
+            return `Successfully wrote to ${filePath}`;
+          } catch (error: any) {
+            return `Error writing file: ${error.message}`;
+          }
+        },
+        {
+          name: "write_file",
+          description: "Writes content to a file.",
+          schema: z.object({ 
+            filePath: z.string().describe("The relative path of the file"),
+            content: z.string().describe("The full content to write to the file")
+          }),
+        }
+      )
+    ];
   }
-
-  private readFile(relPath: string, maxChars = 4000): string {
-    try {
-      const abs = path.join(this.repoPath, relPath);
-      if (!fs.existsSync(abs)) return '';
-      const content = fs.readFileSync(abs, 'utf-8');
-      return content.length > maxChars ? content.slice(0, maxChars) + '\n…(truncated)' : content;
-    } catch {
-      return '';
-    }
-  }
-
-  private async gatherRepoContext(): Promise<string> {
-    console.log(`[AgentService] Gathering repository context...`);
-    const lines: string[] = ['## Repository Context\n'];
-
-    const tree = await this.shell(
-      'find . -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/dist/*" -not -path "*/.next/*" -not -path "*/coverage/*" -maxdepth 4 | sort | head -120'
-    );
-    lines.push(`### Directory Structure\n\`\`\`\n${tree}\n\`\`\``);
-
-    for (const manifest of ['package.json', 'pyproject.toml', 'Cargo.toml', 'go.mod', 'pom.xml']) {
-      const content = this.readFile(manifest);
-      if (content) lines.push(`### ${manifest}\n\`\`\`\n${content}\n\`\`\``);
-    }
-
-    for (const readme of ['README.md', 'readme.md', 'README.txt']) {
-      const content = this.readFile(readme, 3000);
-      if (content) { lines.push(`### README\n${content}`); break; }
-    }
-
-    for (const entry of ['src/index.ts', 'src/main.ts', 'src/app.ts', 'src/server.ts', 'main.py', 'app.py', 'cmd/main.go']) {
-      const content = this.readFile(entry);
-      if (content) { lines.push(`### Entry point: ${entry}\n\`\`\`\n${content}\n\`\`\``); break; }
-    }
-
-    const testFiles = await this.shell(
-      'find . -not -path "*/node_modules/*" \\( -name "*.test.ts" -o -name "*.spec.ts" -o -name "*.test.js" -o -name "*_test.go" -o -name "test_*.py" \\) | head -5'
-    );
-    if (testFiles && !testFiles.startsWith('(command failed')) {
-      for (const tf of testFiles.split('\n').slice(0, 2)) {
-        const content = this.readFile(tf.replace(/^\.\//, ''), 3000);
-        if (content) lines.push(`### Test example: ${tf}\n\`\`\`\n${content}\n\`\`\``);
-      }
-    }
-
-    const gitLog = await this.shell('git log --oneline -10');
-    if (gitLog) lines.push(`### Recent commits\n\`\`\`\n${gitLog}\n\`\`\``);
-
-    const branch = await this.shell('git rev-parse --abbrev-ref HEAD');
-    if (branch) lines.push(`### Current branch\n\`${branch.trim()}\``);
-
-    const totalChars = lines.join('\n\n').length;
-    console.log(`[AgentService] Context gathered (${totalChars} chars).`);
-    return lines.join('\n\n');
-  }
-
-  // ─── Retry wrapper ────────────────────────────────────────────────────────
-
-  private async callWithRetry(params: any): Promise<any> {
-    let attempt = 0;
-    const MAX_ATTEMPTS = 8;
-
-    while (true) {
-      try {
-        return await this.ai.models.generateContent(params);
-      } catch (err: any) {
-        const status = err?.status ?? 0;
-        const msg = String(err?.message ?? '');
-        const is429 = status === 429 || msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED');
-        const is503 = status === 503 || msg.includes('503') || msg.includes('UNAVAILABLE');
-
-        if ((!is429 && !is503) || attempt >= MAX_ATTEMPTS) throw err;
-        attempt++;
-        const delayMs = is429
-          ? (extractRetryDelayMs(err) ?? Math.min(60000, 10000 * attempt))
-          : Math.min(60000, 5000 * Math.pow(2, attempt - 1));
-        console.warn(`[AgentService] ${is429 ? '429 rate limit' : '503 unavailable'} — retrying in ${delayMs / 1000}s (attempt ${attempt}/${MAX_ATTEMPTS})...`);
-        await sleep(delayMs);
-      }
-    }
-  }
-
-  // ─── Main execution (single-shot) ────────────────────────────────────────
 
   async executeTask(): Promise<void> {
-    console.log(`[AgentService] Starting single-shot execution for task ${this.taskData.taskId}`);
+    console.log(`[AgentService] Starting AI execution for task ${this.taskData.taskId}`);
+    
+    const tools = this.getTools();
+    const modelWithTools = this.llm.bindTools(tools);
+    
+    const messages: any[] = [
+      new SystemMessage("You are an expert AI developer ('Kiro') powered by Gemini. You have full access to a terminal and file system in the repository directory. Your job is to complete the sub-task given to you. Use tools to read files, modify them, and test your code. When you are fully done and verified the code, return a final response."),
+      new HumanMessage(
+        `## Parent Task Context\n` +
+        `Parent ID: ${this.taskData.parentId}\n` +
+        `Parent Title: ${this.taskData.parentTitle || '(not provided)'}\n` +
+        `Parent Description:\n${this.taskData.parentDescription || '(not provided)'}\n\n` +
+        `## Sub-task to Implement\n` +
+        `Task ID: ${this.taskData.taskId}\n` +
+        `Title: ${this.taskData.title}\n` +
+        `Description:\n${this.taskData.description || '(not provided)'}\n\n` +
+        `You are currently in the repository folder. Use the parent task context to better understand the broader goal and ensure your implementation is consistent with it. Please execute this sub-task.`
+      )
+    ];
 
-    // 1. Gather repo context (reads filesystem locally — no API call)
-    const repoContext = await this.gatherRepoContext();
+    let iterations = 0;
+    while (iterations < 15) {
+      iterations++;
+      console.log(`[AgentService] Iteration ${iterations}...`);
+      
+      const response: AIMessage = await invokeWithRetry(modelWithTools, messages);
+      messages.push(response);
 
-    // 2. Build the prompt — ask for ALL changes in one structured JSON response
-    const prompt = `You are Kiro, an expert AI software engineer. You will implement the task below in ONE response.
-
-## Repository context
-${repoContext}
-
-## Task
-- **ID:** ${this.taskData.taskId}
-- **Branch:** ${this.taskData.branch}
-- **Title:** ${this.taskData.title}
-- **Description:** ${this.taskData.description || '(infer from title and codebase)'}
-
-## Instructions
-1. Analyze the repository context above carefully.
-2. Identify EVERY file that needs to be created or modified to fully implement the task.
-3. Output your complete implementation as JSON, following the schema exactly.
-
-## Output schema (strict JSON, no markdown)
-{
-  "summary": "Brief description of what was implemented",
-  "files": [
-    {
-      "path": "relative/path/from/repo/root.ts",
-      "action": "create" | "modify",
-      "content": "complete file content — no truncation, no placeholders"
-    }
-  ],
-  "notes": "Optional: caveats, follow-up steps, or assumptions made"
-}
-
-Rules:
-- "content" must be the FULL file content, ready to be written to disk as-is.
-- Never use "// TODO", "// ...", or any placeholder. Write complete, working code.
-- Follow the exact same style, patterns, and conventions as the existing codebase.
-- Only include files that are directly required to implement this task.
-- Do NOT include package.json changes unless you are adding a strictly necessary new package.`;
-
-    // 3. Call the model — single shot, structured JSON output
-    console.log(`[AgentService] Sending single-shot request to ${this.model}...`);
-    const t0 = Date.now();
-
-    const response = await this.callWithRetry({
-      model: 'gemini-2.5-flash',
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      config: {
-        responseMimeType: 'application/json',
-        temperature: 0,
-      },
-    });
-
-    const elapsed = ((Date.now() - t0) / 1000).toFixed(1);
-    console.log(`[AgentService] Response received in ${elapsed}s`);
-
-    // 4. Parse the JSON response
-    let result: { summary: string; files: { path: string; action: string; content: string }[]; notes?: string };
-    try {
-      const raw = response.text ?? '';
-      // Strip any accidental markdown fences the model might add
-      const cleaned = raw.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
-      result = JSON.parse(cleaned);
-    } catch (err: any) {
-      throw new Error(`[AgentService] Failed to parse model JSON output: ${err.message}\nRaw: ${String(response.text).slice(0, 300)}`);
-    }
-
-    console.log(`[AgentService] Summary: ${result.summary}`);
-    if (result.notes) console.log(`[AgentService] Notes: ${result.notes}`);
-
-    // 5. Apply all file changes
-    const files = result.files ?? [];
-    console.log(`[AgentService] Applying ${files.length} file(s)...`);
-
-    for (const file of files) {
-      if (!file.path || !file.content) {
-        console.warn(`[AgentService] Skipping invalid file entry: ${JSON.stringify(file).slice(0, 80)}`);
-        continue;
+      if (!response.tool_calls || response.tool_calls.length === 0) {
+        // Agent finished
+        console.log(`[AgentService] AI task completed. Final response: ${response.content}`);
+        break;
       }
-      const absPath = path.join(this.repoPath, file.path.replace(/^\/+/, ''));
-      fs.mkdirSync(path.dirname(absPath), { recursive: true });
-      fs.writeFileSync(absPath, file.content, 'utf-8');
-      console.log(`[AgentService] ✓ ${file.action ?? 'write'}: ${file.path}`);
+
+      for (const toolCall of response.tool_calls) {
+        console.log(`[AgentService] Executing tool: ${toolCall.name}`);
+        const selectedTool = tools.find((t) => t.name === toolCall.name);
+        if (selectedTool) {
+          const toolResult = await (selectedTool as any).invoke(toolCall.args);
+          messages.push(new ToolMessage({ tool_call_id: toolCall.id || '', content: String(toolResult) }));
+        }
+      }
     }
 
-    console.log(`[AgentService] All files written. Task ${this.taskData.taskId} complete.`);
+    console.log(`[AgentService] AI execution completed for task ${this.taskData.taskId}`);
   }
 }
-

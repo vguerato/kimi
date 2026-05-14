@@ -162,6 +162,8 @@ router.post('/tasks/:id/retry', async (req, res) => {
     await taskQueue.add('agent-task', {
       taskId: task.id,
       parentId: task.parent_id,
+      parentTitle: '',
+      parentDescription: '',
       repository: task.repository,
       title: task.id,
       description: '',

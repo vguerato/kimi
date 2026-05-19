@@ -120,7 +120,7 @@ export function SettingsPage({ repoMappings, onRepoMappingsChange }: SettingsPag
   }, [serverSettings, initialized]);
 
   useEffect(() => {
-    if (location.pathname === '/settings' || location.pathname === '/settings/geral' || location.pathname === '/settings/git') {
+    if (location.pathname === '/settings' || location.pathname === '/settings/geral') {
       navigate('/settings/integracao', { replace: true });
     }
   }, [location.pathname, navigate]);

@@ -48,7 +48,7 @@ export function JiraWebhookCard() {
           }`}
       >
         <RefreshCw size={14} />
-        Registrar Webhook Automaticamente
+        Registrar Webhook
       </button>
     </div>
   );

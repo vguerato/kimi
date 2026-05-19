@@ -4,7 +4,6 @@ import { ArrowLeft, Bell, User, Settings, Save } from 'lucide-react';
 import { useGetSettings } from '../api/useGetSettings';
 import { useSaveSettings } from '../api/useSaveSettings';
 import { IntegracaoTab } from './IntegracaoTab';
-import { JiraTab } from './JiraTab';
 import { GitTab } from './GitTab';
 import { DEFAULT_SETTINGS, type AppSettings, type SettingsTab } from '../types';
 import type { RepoMapping } from '@/features/repositories';
@@ -16,7 +15,6 @@ interface SettingsPageProps {
 
 const TABS: Array<{ key: SettingsTab; label: string; path: string }> = [
   { key: 'integracao', label: 'Integração', path: '/settings/integracao' },
-  { key: 'jira',       label: 'Jira',       path: '/settings/jira' },
   { key: 'git',        label: 'Git',        path: '/settings/git' },
 ];
 
@@ -122,14 +120,13 @@ export function SettingsPage({ repoMappings, onRepoMappingsChange }: SettingsPag
   }, [serverSettings, initialized]);
 
   useEffect(() => {
-    if (location.pathname === '/settings' || location.pathname === '/settings/geral') {
-      navigate('/settings/git', { replace: true });
+    if (location.pathname === '/settings' || location.pathname === '/settings/geral' || location.pathname === '/settings/git') {
+      navigate('/settings/integracao', { replace: true });
     }
   }, [location.pathname, navigate]);
 
-  const isJira = (localSettings.project_manager ?? 'jira') === 'jira';
-  const visibleTabs = TABS.filter(t => t.key !== 'jira' || isJira);
-  const activeTab = (location.pathname.split('/settings/')[1] as SettingsTab) ?? 'git';
+  const visibleTabs = TABS;
+  const activeTab = (location.pathname.split('/settings/')[1] as SettingsTab) ?? 'integracao';
   const handleSave = () => saveSettings({ settings: localSettings, repoMappings });
 
   return (
@@ -151,12 +148,6 @@ export function SettingsPage({ repoMappings, onRepoMappingsChange }: SettingsPag
         <main className="flex-1 overflow-y-auto p-6 bg-background">
           {activeTab === 'integracao' && (
             <IntegracaoTab
-              settings={localSettings}
-              onSettingsChange={setLocalSettings}
-            />
-          )}
-          {activeTab === 'jira' && isJira && (
-            <JiraTab
               settings={localSettings}
               onSettingsChange={setLocalSettings}
             />

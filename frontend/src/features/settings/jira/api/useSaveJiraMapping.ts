@@ -1,19 +1,24 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
-import { JIRA_MAPPING_QUERY_KEY } from './useGetJiraMapping';
-import type { JiraMapping } from '../types';
+import { pmMappingQueryKey } from './useGetJiraMapping';
+import type { PMMapping } from '../types';
 
-export function useSaveJiraMapping() {
+export function useSavePMMapping(provider: string) {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (mapping: JiraMapping) =>
-            api.post('/api/jira/mapping', mapping),
+        mutationFn: (mapping: PMMapping) =>
+            api.post(`/api/project-manager/${provider}/mapping`, mapping),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: JIRA_MAPPING_QUERY_KEY });
-            toast.success('Mapeamento Jira salvo!');
+            queryClient.invalidateQueries({ queryKey: pmMappingQueryKey(provider) });
+            toast.success('Mapeamento salvo!');
         },
         onError: () => toast.error('Erro ao salvar mapeamento.'),
     });
+}
+
+/** @deprecated Use useSavePMMapping instead */
+export function useSaveJiraMapping() {
+    return useSavePMMapping('jira');
 }

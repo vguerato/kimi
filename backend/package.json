@@ -1,7 +1,7 @@
 {
   "name": "backend",
   "version": "2.0.0",
-  "description": "Kiro AI — Agent Backend v2 (API-first VCS, dynamic orchestration, agent harness)",
+  "description": "Shift — Agent Backend v2 (API-first VCS, dynamic orchestration, agent harness)",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",

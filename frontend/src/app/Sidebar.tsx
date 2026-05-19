@@ -20,7 +20,7 @@ export function Sidebar() {
           K
         </div>
         <div>
-          <p className="font-bold text-sm text-foreground leading-tight">Kiro AI</p>
+          <p className="font-bold text-sm text-foreground leading-tight">Shift</p>
           <p className="text-[11px] leading-tight text-muted">Task Delegator</p>
         </div>
       </div>

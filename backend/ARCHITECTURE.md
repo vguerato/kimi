@@ -1,4 +1,4 @@
-# Kiro AI Backend v2 — Arquitetura
+# Shift Backend v2 — Arquitetura
 
 ## Visão Geral
 

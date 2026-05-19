@@ -252,7 +252,7 @@ class JiraClient {
 
   async createWebhook(webhookUrl: string): Promise<{ self?: string; id?: string | number }> {
     const { data } = await this.post('/rest/webhooks/1.0/webhook', {
-      name: 'Kiro AI — Task Delegator',
+      name: 'Shift — Task Delegator',
       url: webhookUrl,
       events: ['jira:issue_updated'],
       jqlFilter: '',

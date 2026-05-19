@@ -42,7 +42,7 @@ TaskOrchestrator.processTask()
     ├─ 4. IVCSAdapter.branchExists()?
     │      └─ não → createBranch()
     │
-    ├─ 5. git clone → /tmp/kiro-tasks/{taskId}
+    ├─ 5. git clone → /tmp/shift-tasks/{taskId}
     │
     ├─ 6. AgentHarness.execute()
     │      ├─ pre-flight: carrega contexto do projeto
@@ -66,7 +66,7 @@ TaskOrchestrator.processTask()
     ├─ 11. IProjectManagerAdapter.updateTaskStatus()
     │       └─ move issue para "Em Análise"
     │
-    └─ 12. rm -rf /tmp/kiro-tasks/{taskId}
+    └─ 12. rm -rf /tmp/shift-tasks/{taskId}
 ```
 
 ## Status da Tarefa

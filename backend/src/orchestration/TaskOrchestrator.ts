@@ -201,7 +201,7 @@ export class TaskOrchestrator {
                 if (commitResult?.url) {
                     await pm.addComment(
                         taskData.taskId,
-                        `✅ Implementação concluída pelo agente Kiro.\n\nCommit: ${commitResult.url}`
+                        `✅ Implementação concluída pelo agente Shift.\n\nCommit: ${commitResult.url}`
                     ).catch(() => { });
                 }
                 await pm.updateTaskStatus(taskData.taskId, 'Em análise').catch(() => { });
@@ -347,7 +347,7 @@ export class TaskOrchestrator {
     // ─── Helpers de workdir ──────────────────────────────────────────────────────
 
     private async createWorkDir(taskId: string): Promise<string> {
-        const workDir = path.join('/tmp', 'kiro-tasks', taskId);
+        const workDir = path.join('/tmp', 'shift-tasks', taskId);
         if (!fs.existsSync(workDir)) fs.mkdirSync(workDir, { recursive: true });
         return workDir;
     }
@@ -439,7 +439,7 @@ export class TaskOrchestrator {
             // Fallback: commit via git local no workdir
             try {
                 const settings = await this.deps.settingsRepo.findAll();
-                const username = settings['github_username'] ?? 'kiro-agent';
+                const username = settings['github_username'] ?? 'shift-agent';
 
                 await execAsync(`git config user.name "${username}"`, { cwd: workDir });
                 await execAsync(`git config user.email "${username}@users.noreply.github.com"`, { cwd: workDir });

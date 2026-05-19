@@ -17,7 +17,7 @@
  *     DOCKER_HOST=tcp://docker:2375
  *
  *   Os containers efêmeros criados por este runtime são automaticamente
- *   identificados com labels `kiro.managed=true` para facilitar limpeza
+ *   identificados com labels `shift.managed=true` para facilitar limpeza
  *   em caso de crash do servidor.
  *
  * ─── Nota sobre o @docker/sdk ────────────────────────────────────────────────
@@ -216,10 +216,10 @@ export class DockerContainerRuntime implements IContainerRuntime {
         ReadonlyRootfs: false,
       },
       Labels: {
-        'kiro.managed': 'true',
-        'kiro.repo': repoUrl,
-        'kiro.branch': branch,
-        'kiro.created': new Date().toISOString(),
+        'shift.managed': 'true',
+        'shift.repo': repoUrl,
+        'shift.branch': branch,
+        'shift.created': new Date().toISOString(),
       },
     });
 

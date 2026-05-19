@@ -37,7 +37,7 @@ export const logger: Logger = pino({
     : undefined,
 
   // Base fields added to every log line
-  base: { service: 'kiro-backend' },
+  base: { service: 'shift-backend' },
 
   // Redact sensitive fields from structured logs
   redact: {

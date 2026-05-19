@@ -6,7 +6,7 @@ sidebar_label: Visão Geral
 
 # Arquitetura
 
-O Kiro AI é construído sobre **Clean Architecture** com **Domain-Driven Design (DDD)**. As dependências sempre apontam para dentro — infraestrutura depende do domínio, nunca o contrário.
+O Shift é construído sobre **Clean Architecture** com **Domain-Driven Design (DDD)**. As dependências sempre apontam para dentro — infraestrutura depende do domínio, nunca o contrário.
 
 ## Diagrama de Camadas
 

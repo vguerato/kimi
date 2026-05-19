@@ -74,7 +74,7 @@ Configurações armazenadas no banco SQLite (tabela `settings`). Acessíveis via
 | Chave | Descrição |
 |---|---|
 | `git_pat` | Personal Access Token do GitHub/Azure DevOps |
-| `github_username` | Nome de usuário para commits do agente (ex: `kiro-agent`) |
+| `github_username` | Nome de usuário para commits do agente (ex: `shift-agent`) |
 | `repo_mappings` | JSON: `{ "prefix": "https://github.com/org/repo.git" }` |
 
 ### Project Manager

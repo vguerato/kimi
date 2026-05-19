@@ -1,10 +1,10 @@
 ---
 id: index
-title: Kiro AI
+title: Shift
 slug: /
 ---
 
-# Kiro AI — Task Delegator
+# Shift — Task Delegator
 
 Sistema de automação de tarefas de desenvolvimento orientado por agentes de IA. Recebe tarefas de gerenciadores de projetos (Jira, Azure DevOps), executa-as autonomamente usando LLMs, e commita o resultado diretamente no repositório via API VCS — sem clonar código localmente.
 

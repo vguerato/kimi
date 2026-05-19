@@ -71,7 +71,7 @@ No Azure DevOps, "labels" são chamadas de **tags** e são separadas por `;`. O 
 
 Exemplo de tags após execução:
 ```
-model:gemini-2.5-flash; kiro-agent
+model:gemini-2.5-flash; shift-agent
 ```
 
 ## Payload do Webhook
@@ -111,7 +111,7 @@ O Azure DevOps envia um payload `workitem.updated`:
 
 ## Hierarquia de Work Items
 
-O Kiro encontra o work item pai via a relação `System.LinkTypes.Hierarchy-Reverse` nas relações do work item. Se encontrado, busca o pai para contexto adicional.
+O Shift encontra o work item pai via a relação `System.LinkTypes.Hierarchy-Reverse` nas relações do work item. Se encontrado, busca o pai para contexto adicional.
 
 ## Autenticação
 

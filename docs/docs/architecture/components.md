@@ -18,7 +18,7 @@ Orquestrador central de execução de tarefas. Recebe `OrchestratorDependencies`
 3. Verifica/indexa contexto do projeto via `ContextEngine`
 4. Seleciona o modelo LLM via `AgentHarness.selectModel()`
 5. Cria branch no VCS se não existir
-6. Clona o repositório em `/tmp/kiro-tasks/{taskId}` (temporário)
+6. Clona o repositório em `/tmp/shift-tasks/{taskId}` (temporário)
 7. Executa o agente via `AgentHarness.execute()` com tools dinâmicas
 8. Commita arquivos modificados via VCS API
 9. Armazena contexto de execução na memória
@@ -201,7 +201,7 @@ volumes:
 - Containers sem privilégios (`--no-new-privileges`)
 - Rede isolada (`NetworkMode: none`)
 - TTL automático (padrão: 5 minutos)
-- Labels `kiro.managed=true` para identificação
+- Labels `shift.managed=true` para identificação
 
 ---
 

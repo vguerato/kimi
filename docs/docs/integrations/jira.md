@@ -26,7 +26,7 @@ Clique em **Salvar Configurações** — o sistema valida as credenciais automat
 
 ### 3. Configurar Webhook
 
-O webhook notifica o Kiro quando um issue muda de status.
+O webhook notifica o Shift quando um issue muda de status.
 
 **Com Ngrok (desenvolvimento):**
 1. Configure `NGROK_AUTHTOKEN` no `backend/.env`
@@ -49,7 +49,7 @@ Registre manualmente no Jira com:
 
 ## Convenção de Títulos
 
-O Kiro identifica o repositório pelo prefixo entre colchetes no título do issue:
+O Shift identifica o repositório pelo prefixo entre colchetes no título do issue:
 
 ```
 [payments] Adicionar endpoint de reembolso
@@ -94,21 +94,21 @@ O Jira envia um payload `jira:issue_updated` com o changelog:
 ```
 
 :::note Formato ADF
-A descrição do Jira é retornada no formato **Atlassian Document Format (ADF)** — um objeto JSON complexo. O Kiro converte automaticamente para texto plano antes de enviar ao agente.
+A descrição do Jira é retornada no formato **Atlassian Document Format (ADF)** — um objeto JSON complexo. O Shift converte automaticamente para texto plano antes de enviar ao agente.
 :::
 
 ## Hierarquia de Issues
 
-O Kiro suporta dois cenários:
+O Shift suporta dois cenários:
 
 **Issue pai com subtasks:**
 - O webhook é disparado no issue pai
-- O Kiro busca todas as subtasks elegíveis
+- O Shift busca todas as subtasks elegíveis
 - Cada subtask elegível é enfileirada como uma tarefa separada
 
 **Subtask disparada diretamente:**
 - O webhook é disparado na subtask
-- O Kiro busca o issue pai para contexto adicional
+- O Shift busca o issue pai para contexto adicional
 - A subtask é enfileirada com o contexto do pai
 
 ## Settings do Banco

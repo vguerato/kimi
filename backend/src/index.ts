@@ -1,5 +1,5 @@
 /**
- * index.ts — Entry point do servidor Kiro AI Backend v2.
+ * index.ts — Entry point do servidor Shift Backend v2.
  *
  * Responsabilidade única: carregar variáveis de ambiente e delegar
  * toda a inicialização para bootstrap/app.ts.

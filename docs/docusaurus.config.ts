@@ -3,7 +3,7 @@ import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
 
 const config: Config = {
-    title: 'Kiro AI',
+    title: 'Shift',
     tagline: 'Automação de tarefas de desenvolvimento orientada por agentes de IA',
     favicon: 'img/favicon.ico',
 
@@ -42,9 +42,9 @@ const config: Config = {
             respectPrefersColorScheme: true,
         },
         navbar: {
-            title: 'Kiro AI',
+            title: 'Shift',
             logo: {
-                alt: 'Kiro AI',
+                alt: 'Shift',
                 src: 'img/logo.svg',
             },
             items: [
@@ -68,7 +68,7 @@ const config: Config = {
         },
         footer: {
             style: 'dark',
-            copyright: `Kiro AI — Documentação`,
+            copyright: `Shift — Documentação`,
         },
         prism: {
             theme: prismThemes.github,

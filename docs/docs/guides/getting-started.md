@@ -16,7 +16,7 @@ sidebar_label: Início Rápido
 
 ```bash
 git clone <repo-url>
-cd kiro-ai
+cd shift
 
 cp backend/.env.example backend/.env
 ```
@@ -54,7 +54,7 @@ Acesse http://localhost:5173 → **Configurações**:
 
 Configure as credenciais de acesso ao repositório:
 
-- **GitHub Username** — nome de usuário para commits do agente (ex: `kiro-agent`)
+- **GitHub Username** — nome de usuário para commits do agente (ex: `shift-agent`)
 - **Git PAT** — Personal Access Token com escopo `repo`
 - **Mapeamento de Repositórios** — conecta prefixos de issues a URLs de repositórios:
 

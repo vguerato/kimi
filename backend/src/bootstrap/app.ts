@@ -74,7 +74,7 @@ export async function startApp(): Promise<void> {
     // 5. Servidor HTTP
     await new Promise<void>((resolve) => {
         app.listen(PORT, () => {
-            logger.info({ port: PORT }, 'Servidor Kiro AI Backend v2 iniciado');
+            logger.info({ port: PORT }, 'Servidor Shift Backend v2 iniciado');
             resolve();
         });
     });

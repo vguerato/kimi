@@ -6,7 +6,7 @@ sidebar_label: VCS
 
 # VCS — Controle de Versão
 
-O Kiro opera em modo **API-first** — repositórios nunca são clonados permanentemente. Todas as operações usam a API REST do provedor.
+O Shift opera em modo **API-first** — repositórios nunca são clonados permanentemente. Todas as operações usam a API REST do provedor.
 
 ## GitHub
 
@@ -17,7 +17,7 @@ Configure nas settings do banco:
 | Chave | Descrição |
 |---|---|
 | `git_pat` | Personal Access Token com escopo `repo` |
-| `github_username` | Nome de usuário para commits (ex: `kiro-agent`) |
+| `github_username` | Nome de usuário para commits (ex: `shift-agent`) |
 
 **Gerar PAT:** https://github.com/settings/tokens → Classic → escopo `repo`
 
@@ -94,7 +94,7 @@ O prefixo (ex: `payments`) deve aparecer entre colchetes no título do issue:
 
 ## Execução Local (containers efêmeros)
 
-Para operações que requerem execução de código (testes, builds), o Kiro provisiona um container Docker efêmero:
+Para operações que requerem execução de código (testes, builds), o Shift provisiona um container Docker efêmero:
 
 ```yaml
 # docker-compose.yml — necessário para containers efêmeros

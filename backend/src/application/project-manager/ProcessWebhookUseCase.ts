@@ -1,26 +1,25 @@
 /**
  * ProcessWebhookUseCase — Processa um webhook recebido do project manager.
  *
- * Encaminha o payload (com metadados de assinatura) para o adapter ativo.
- * A validação HMAC é responsabilidade do adapter — este use case apenas
- * roteia para o provedor correto.
+ * Roteia o payload para o adapter correto (por tipo explícito ou configuração ativa).
+ * A validação HMAC é responsabilidade do adapter.
+ *
+ * Lança ServiceUnavailableError se o adapter não estiver registrado.
+ * Lança UnauthorizedError se a assinatura HMAC for inválida.
+ * Propaga qualquer outro erro do adapter sem modificação.
  */
 
 import { ISettingsRepository } from '../../domain/settings/ports/ISettingsRepository';
 import { ProjectManagerRegistry } from '../../infrastructure/project-manager/ProjectManagerRegistry';
+import { ServiceUnavailableError, UnauthorizedError } from '../../api/errors/HttpError';
 
 export interface ProcessWebhookInput {
     body: unknown;
     signature?: string;
     rawBody: string;
-    /** Se fornecido, usa este adapter diretamente (ex: rota /jira/webhook). */
+    /** Se fornecido, usa este adapter diretamente em vez do ativo nas settings. */
     adapterType?: string;
 }
-
-export type ProcessWebhookResult =
-    | { type: 'ok' }
-    | { type: 'no_adapter' }
-    | { type: 'unauthorized'; message: string };
 
 export class ProcessWebhookUseCase {
     constructor(
@@ -28,13 +27,18 @@ export class ProcessWebhookUseCase {
         private readonly registry: ProjectManagerRegistry,
     ) { }
 
-    async execute(input: ProcessWebhookInput): Promise<ProcessWebhookResult> {
+    async execute(input: ProcessWebhookInput): Promise<void> {
         const adapterType = input.adapterType
             ?? (await this.settingsRepo.findOne('project_manager'))
             ?? 'jira';
 
         const adapter = this.registry.adapters.get(adapterType);
-        if (!adapter) return { type: 'no_adapter' };
+
+        if (!adapter) {
+            throw new ServiceUnavailableError(
+                `Adapter de project manager "${adapterType}" não registrado. Verifique as configurações.`,
+            );
+        }
 
         try {
             await adapter.processWebhook({
@@ -42,11 +46,10 @@ export class ProcessWebhookUseCase {
                 signature: input.signature,
                 rawBody: input.rawBody,
             });
-            return { type: 'ok' };
         } catch (e: unknown) {
             const msg = (e as Error)?.message ?? String(e);
             if (msg.includes('assinatura')) {
-                return { type: 'unauthorized', message: msg };
+                throw new UnauthorizedError(msg);
             }
             throw e;
         }

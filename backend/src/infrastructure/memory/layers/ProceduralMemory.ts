@@ -94,7 +94,10 @@ export class ProceduralMemory {
    * completo e atualizado, não incremental.
    */
   storeProjectContext(context: ProjectContextMemory): void {
-    this.store.projectContexts[context.repoId] = context;
+    this.store.projectContexts[context.repoId] = {
+      ...context,
+      indexedAt: context.indexedAt ?? new Date().toISOString(),
+    };
     this.persist();
   }
 

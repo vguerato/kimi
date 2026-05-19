@@ -42,6 +42,8 @@ import { GetRepoStatusUseCase } from '../application/projects/GetRepoStatusUseCa
 import { IndexProjectUseCase } from '../application/projects/IndexProjectUseCase';
 import { GetProjectContextUseCase } from '../application/projects/GetProjectContextUseCase';
 import { ClearProjectMemoryUseCase } from '../application/projects/ClearProjectMemoryUseCase';
+import { ListGitRepositoriesUseCase } from '../application/projects/ListGitRepositoriesUseCase';
+import { ValidateGitConnectionUseCase } from '../application/projects/ValidateGitConnectionUseCase';
 import { GetProvidersUseCase } from '../application/project-manager/GetProvidersUseCase';
 import { GetPMConfigUseCase } from '../application/project-manager/GetPMConfigUseCase';
 import { GetMappingUseCase } from '../application/project-manager/GetMappingUseCase';
@@ -68,6 +70,8 @@ const getRepoStatusUC = new GetRepoStatusUseCase(container.settingsRepo, contain
 const indexProjectUC = new IndexProjectUseCase(container.settingsRepo, container.contextEngine);
 const getContextUC = new GetProjectContextUseCase(container.memoryAdapter);
 const clearMemoryUC = new ClearProjectMemoryUseCase(container.memoryAdapter);
+const listGitReposUC = new ListGitRepositoriesUseCase(container.settingsRepo, container.memoryAdapter);
+const validateGitUC = new ValidateGitConnectionUseCase(container.settingsRepo);
 
 const getProvidersUC = new GetProvidersUseCase(container.projectManagerRegistry);
 const getPMConfigUC = new GetPMConfigUseCase(container.settingsRepo, container.projectManagerRegistry);
@@ -80,7 +84,7 @@ const setupWebhookUC = new SetupWebhookUseCase(container.projectManagerRegistry)
 
 const settings = new SettingsController(getSettingsUC, saveSettingsUC);
 const tasks = new TasksController(listTasksUC, deleteTaskUC, retryTaskUC, streamLogsUC, logEmitter);
-const projects = new ProjectsController(listProjectsUC, getRepoStatusUC, indexProjectUC, getContextUC, clearMemoryUC);
+const projects = new ProjectsController(listProjectsUC, getRepoStatusUC, indexProjectUC, getContextUC, clearMemoryUC, listGitReposUC, validateGitUC);
 const pm = new ProjectManagerController(getProvidersUC, getPMConfigUC, getMappingUC, saveMappingUC, processWebhookUC, setupWebhookUC);
 const ngrok = new NgrokController();
 
@@ -97,9 +101,14 @@ router.get('/repos/status', asyncHandler(projects.repoStatus.bind(projects)));
 
 // Projects
 router.get('/projects', asyncHandler(projects.list.bind(projects)));
+router.get('/projects/:prefix/index', asyncHandler(projects.index.bind(projects)));
 router.post('/projects/:prefix/index', asyncHandler(projects.index.bind(projects)));
 router.get('/projects/:prefix/context', asyncHandler(projects.getContext.bind(projects)));
 router.delete('/projects/:prefix/memory', asyncHandler(projects.clearMemory.bind(projects)));
+
+// Git repositories (lista repos acessíveis via PAT)
+router.get('/git/repositories', asyncHandler(projects.listGitRepositories.bind(projects)));
+router.get('/git/validate', asyncHandler(projects.validateGit.bind(projects)));
 
 // ─── Project Manager — rotas agnósticas ──────────────────────────────────────
 //

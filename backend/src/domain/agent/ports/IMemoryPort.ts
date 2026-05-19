@@ -63,6 +63,8 @@ export interface ProjectContextMemory {
     specs: string[];
     /** Confiança do contexto (0–1). */
     confidence: number;
+    /** ISO timestamp de quando o contexto foi indexado. */
+    indexedAt?: string;
 }
 
 export interface IMemoryPort {

@@ -8,6 +8,16 @@ interface IndexProjectResponse {
     message?: string;
 }
 
+interface IndexProjectInput {
+    /** Identificador do projeto na memória (nome do repo ou prefixo de tarefa). */
+    prefix: string;
+    /**
+     * URL de clone do repositório.
+     * Quando fornecida, a indexação não depende do repo_mappings.
+     */
+    repoUrl?: string;
+}
+
 /**
  * Dispara a indexação de contexto de um projeto específico.
  * A indexação roda em background no servidor — a resposta é imediata.
@@ -16,16 +26,18 @@ export function useIndexProject() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (prefix: string) =>
-            api.post<IndexProjectResponse>(`/api/projects/${encodeURIComponent(prefix)}/index`),
-        onSuccess: (_data, prefix) => {
+        mutationFn: ({ prefix, repoUrl }: IndexProjectInput) =>
+            api.post<IndexProjectResponse>(
+                `/api/projects/${encodeURIComponent(prefix)}/index`,
+                repoUrl ? { repoUrl } : {},
+            ),
+        onSuccess: (_data, { prefix }) => {
             toast.info(`Indexação do projeto "${prefix}" iniciada...`);
-            // Invalida o status após um delay para dar tempo ao servidor processar
             setTimeout(() => {
                 queryClient.invalidateQueries({ queryKey: REPO_STATUS_QUERY_KEY });
             }, 3000);
         },
-        onError: (_err, prefix) => {
+        onError: (_err, { prefix }) => {
             toast.error(`Erro ao iniciar indexação de "${prefix}".`);
         },
     });

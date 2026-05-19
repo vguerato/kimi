@@ -28,6 +28,6 @@ export class SettingsController {
     /** POST /settings */
     async save(req: Request, res: Response): Promise<void> {
         const result = await this.saveSettings.execute({ settings: req.body });
-        res.json({ success: true, pmValid: result.pmValid });
+        res.json({ success: true, pmValid: result.pmValid, gitValid: result.gitValid, gitLogin: result.gitLogin });
     }
 }

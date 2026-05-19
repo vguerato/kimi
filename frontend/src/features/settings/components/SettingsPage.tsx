@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Bell, User, Settings, Save } from 'lucide-react';
 import { useGetSettings } from '../api/useGetSettings';
 import { useSaveSettings } from '../api/useSaveSettings';
+import { useValidateGitConnection } from '../api/useValidateGitConnection';
 import { IntegracaoTab } from './IntegracaoTab';
 import { GitTab } from './GitTab';
 import { DEFAULT_SETTINGS, type AppSettings, type SettingsTab } from '../types';
@@ -111,6 +112,11 @@ export function SettingsPage({ repoMappings, onRepoMappingsChange }: SettingsPag
 
   const { data: serverSettings } = useGetSettings();
   const { mutate: saveSettings, isPending: isSaving } = useSaveSettings();
+
+  // Valida a conexão Git ao carregar as settings do servidor.
+  // enabled só quando git_pat está salvo — popula o cache sem depender do save.
+  const hasGitPat = !!(serverSettings?.git_pat?.trim());
+  useValidateGitConnection(hasGitPat && initialized);
 
   useEffect(() => {
     if (serverSettings && !initialized) {

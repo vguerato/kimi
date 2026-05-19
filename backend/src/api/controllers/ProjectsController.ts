@@ -15,60 +15,77 @@ import { GetRepoStatusUseCase } from '../../application/projects/GetRepoStatusUs
 import { IndexProjectUseCase } from '../../application/projects/IndexProjectUseCase';
 import { GetProjectContextUseCase } from '../../application/projects/GetProjectContextUseCase';
 import { ClearProjectMemoryUseCase } from '../../application/projects/ClearProjectMemoryUseCase';
+import { ListGitRepositoriesUseCase } from '../../application/projects/ListGitRepositoriesUseCase';
+import { ValidateGitConnectionUseCase } from '../../application/projects/ValidateGitConnectionUseCase';
 
 export class ProjectsController {
-    constructor(
-        private readonly listProjects: ListProjectsUseCase,
-        private readonly getRepoStatus: GetRepoStatusUseCase,
-        private readonly indexProject: IndexProjectUseCase,
-        private readonly getProjectContext: GetProjectContextUseCase,
-        private readonly clearProjectMemory: ClearProjectMemoryUseCase,
-    ) { }
+  constructor(
+    private readonly listProjects: ListProjectsUseCase,
+    private readonly getRepoStatus: GetRepoStatusUseCase,
+    private readonly indexProject: IndexProjectUseCase,
+    private readonly getProjectContext: GetProjectContextUseCase,
+    private readonly clearProjectMemory: ClearProjectMemoryUseCase,
+    private readonly listGitRepos: ListGitRepositoriesUseCase,
+    private readonly validateGitConnection: ValidateGitConnectionUseCase,
+  ) { }
 
-    /** GET /repos/status */
-    async repoStatus(_req: Request, res: Response): Promise<void> {
-        const statusMap = await this.getRepoStatus.execute();
-        res.json(statusMap);
+  /** GET /repos/status */
+  async repoStatus(_req: Request, res: Response): Promise<void> {
+    const statusMap = await this.getRepoStatus.execute();
+    res.json(statusMap);
+  }
+
+  /** GET /projects */
+  async list(_req: Request, res: Response): Promise<void> {
+    const projects = await this.listProjects.execute();
+    res.json(projects);
+  }
+
+  /** POST /projects/:prefix/index */
+  async index(req: Request, res: Response): Promise<void> {
+    const prefix = String(req.params.prefix);
+    const repoUrl = req.body?.repoUrl ? String(req.body.repoUrl) : undefined;
+    const result = await this.indexProject.execute({ prefix, repoUrl });
+
+    if (result.type === 'not_found') {
+      res.status(404).json({ error: `Repositório "${prefix}" não encontrado. Forneça repoUrl no body ou configure o mapeamento.` });
+      return;
     }
 
-    /** GET /projects */
-    async list(_req: Request, res: Response): Promise<void> {
-        const projects = await this.listProjects.execute();
-        res.json(projects);
+    res.json({ success: true, message: `Indexação do projeto "${prefix}" iniciada.` });
+  }
+
+  /** GET /projects/:prefix/context */
+  async getContext(req: Request, res: Response): Promise<void> {
+    const prefix = String(req.params.prefix);
+    const result = await this.getProjectContext.execute(prefix);
+
+    if (result.type === 'not_found') {
+      res.status(404).json({
+        error: `Contexto do projeto "${prefix}" não encontrado. Execute POST /projects/${prefix}/index primeiro.`,
+      });
+      return;
     }
 
-    /** POST /projects/:prefix/index */
-    async index(req: Request, res: Response): Promise<void> {
-        const prefix = String(req.params.prefix);
-        const result = await this.indexProject.execute({ prefix });
+    res.json(result.context);
+  }
 
-        if (result.type === 'not_found') {
-            res.status(404).json({ error: `Repositório "${prefix}" não encontrado.` });
-            return;
-        }
+  /** DELETE /projects/:prefix/memory */
+  async clearMemory(req: Request, res: Response): Promise<void> {
+    const prefix = String(req.params.prefix);
+    await this.clearProjectMemory.execute(prefix);
+    res.json({ success: true, message: `Memória do projeto "${prefix}" limpa.` });
+  }
 
-        res.json({ success: true, message: `Indexação do projeto "${prefix}" iniciada.` });
-    }
+  /** GET /git/repositories — lista repos acessíveis via PAT */
+  async listGitRepositories(_req: Request, res: Response): Promise<void> {
+    const repos = await this.listGitRepos.execute();
+    res.json(repos);
+  }
 
-    /** GET /projects/:prefix/context */
-    async getContext(req: Request, res: Response): Promise<void> {
-        const prefix = String(req.params.prefix);
-        const result = await this.getProjectContext.execute(prefix);
-
-        if (result.type === 'not_found') {
-            res.status(404).json({
-                error: `Contexto do projeto "${prefix}" não encontrado. Execute POST /projects/${prefix}/index primeiro.`,
-            });
-            return;
-        }
-
-        res.json(result.context);
-    }
-
-    /** DELETE /projects/:prefix/memory */
-    async clearMemory(req: Request, res: Response): Promise<void> {
-        const prefix = String(req.params.prefix);
-        await this.clearProjectMemory.execute(prefix);
-        res.json({ success: true, message: `Memória do projeto "${prefix}" limpa.` });
-    }
+  /** GET /git/validate — valida conexão com o GitHub */
+  async validateGit(_req: Request, res: Response): Promise<void> {
+    const status = await this.validateGitConnection.execute();
+    res.json(status);
+  }
 }

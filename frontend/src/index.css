@@ -1,13 +1,94 @@
 @import "tailwindcss";
-@plugin "../hero.ts";
-@source "../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}";
+@import "@heroui/styles/css";
 
-html, body, #root {
-  height: 100%;
-  width: 100%;
+/* ─── Kiro AI Dark Theme ──────────────────────────────────────────────────────
+   Overrides HeroUI v3 default theme variables using oklch.
+   Reference: https://heroui.com/docs/react/getting-started/theming
+   ─────────────────────────────────────────────────────────────────────────── */
+
+:root,
+.dark,
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --background:  oklch(0.10 0.008 270);
+  --foreground:  oklch(0.96 0.003 270);
+
+  --surface:           oklch(0.14 0.010 270);
+  --surface-secondary: oklch(0.17 0.012 270);
+  --surface-tertiary:  oklch(0.20 0.014 270);
+  --surface-foreground: var(--foreground);
+  --surface-secondary-foreground: var(--foreground);
+  --surface-tertiary-foreground:  var(--foreground);
+
+  --overlay:            oklch(0.14 0.010 270);
+  --overlay-foreground: var(--foreground);
+
+  --muted: oklch(0.55 0.010 270);
+
+  --default:            oklch(0.22 0.012 270);
+  --default-foreground: oklch(0.65 0.008 270);
+
+  --accent:            oklch(0.60 0.195 264);
+  --accent-foreground: oklch(1.00 0.000 0);
+
+  --field-background:  oklch(0.17 0.012 270);
+  --field-foreground:  var(--foreground);
+  --field-placeholder: var(--muted);
+  --field-border:      transparent;
+
+  --success:            oklch(0.72 0.190 150);
+  --success-foreground: oklch(1.00 0.000 0);
+  --warning:            oklch(0.78 0.160 72);
+  --warning-foreground: oklch(0.15 0.000 0);
+  --danger:             oklch(0.62 0.220 25);
+  --danger-foreground:  oklch(1.00 0.000 0);
+
+  --border:    oklch(0.22 0.010 270);
+  --separator: oklch(0.20 0.010 270);
+
+  --focus: var(--accent);
+  --link:  var(--accent);
+
+  --backdrop: rgba(0, 0, 0, 0.75);
+  --radius: 0.625rem;
+
+  --surface-shadow: 0 0 0 0 transparent;
+  --overlay-shadow: 0 0 1px 0 rgba(255,255,255,0.15) inset;
+  --field-shadow:   0 0 0 0 transparent;
+}
+
+/* ─── Base ────────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  height: 100dvh;
+  overflow: hidden;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  height: 100dvh;
+  overflow: hidden;
   margin: 0;
   padding: 0;
-  background-color: #0f0f11;
-  color: #fff;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--background);
 }
+
+/* #root must be a flex column so children can use h-full reliably */
+#root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar       { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--default); }

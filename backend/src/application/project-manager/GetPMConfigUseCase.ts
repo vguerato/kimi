@@ -1,8 +1,9 @@
 /**
  * GetPMConfigUseCase — Busca statuses e tipos de issue do project manager ativo.
  *
+ * Aceita um `adapterType` opcional para operar em um provedor específico.
+ * Se não fornecido, usa o provedor configurado nas settings.
  * Lança ServiceUnavailableError se nenhum adapter estiver registrado.
- * Usado para popular o formulário de mapeamento no frontend.
  */
 
 import { ISettingsRepository } from '../../domain/settings/ports/ISettingsRepository';
@@ -16,8 +17,8 @@ export class GetPMConfigUseCase {
         private readonly registry: ProjectManagerRegistry,
     ) { }
 
-    async execute(): Promise<ProjectManagerConfig> {
-        const type = (await this.settingsRepo.findOne('project_manager')) ?? 'jira';
+    async execute(adapterType?: string): Promise<ProjectManagerConfig> {
+        const type = adapterType ?? (await this.settingsRepo.findOne('project_manager')) ?? 'jira';
         const adapter = this.registry.adapters.get(type);
 
         if (!adapter) {

@@ -33,6 +33,7 @@ import {
   ProjectManagerMapping,
   ProjectManagerIssue,
 } from '../../../domain/project-manager/ProjectManagerIssue';
+import { ServiceUnavailableError, UnauthorizedError } from '../../../api/errors/HttpError';
 import { TOKENS } from '../../../bootstrap/tokens';
 
 const log = logger.child({ module: 'jira-service' });
@@ -326,7 +327,7 @@ export class JiraService {
 
   private async requireClient(): Promise<JiraClient> {
     const creds = await this.loadCredentials();
-    if (!creds) throw new Error('Credenciais do Jira não configuradas.');
+    if (!creds) throw new ServiceUnavailableError('Credenciais do Jira não configuradas.');
     return new JiraClient(creds);
   }
 
@@ -397,7 +398,7 @@ export class JiraService {
       const isValid = await this.validateWebhookSignature(signature, rawBody);
       if (!isValid) {
         log.warn('Webhook rejeitado: assinatura HMAC inválida');
-        throw new Error('Assinatura do webhook inválida.');
+        throw new UnauthorizedError('Assinatura do webhook inválida.');
       }
     }
 

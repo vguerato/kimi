@@ -118,7 +118,9 @@ tsContainer.register(TOKENS.VCSAdapter, {
 
 // ─── 4. Orquestração — useClass ───────────────────────────────────────────────
 
-tsContainer.register(TOKENS.ProjectManagerRegistry, { useClass: ProjectManagerRegistry });
+tsContainer.register(TOKENS.ProjectManagerRegistry, {
+  useFactory: instanceCachingFactory(() => new ProjectManagerRegistry()),
+});
 tsContainer.register(TOKENS.Context, { useClass: ContextEngine });
 tsContainer.register(TOKENS.AgentHarness, { useClass: AgentHarness });
 

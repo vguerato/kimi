@@ -86,6 +86,7 @@ import {
     ProjectManagerMapping,
     ProjectManagerIssue,
 } from '../../../domain/project-manager/ProjectManagerIssue';
+import { ServiceUnavailableError } from '../../../api/errors/HttpError';
 import { TOKENS } from '../../../bootstrap/tokens';
 
 const log = logger.child({ module: 'azure-devops-service' });
@@ -383,7 +384,7 @@ export class AzureDevOpsService {
 
     private async requireClient(): Promise<AzureDevOpsClient> {
         const creds = await this.loadCredentials();
-        if (!creds) throw new Error('Credenciais do Azure DevOps não configuradas.');
+        if (!creds) throw new ServiceUnavailableError('Credenciais do Azure DevOps não configuradas.');
         return new AzureDevOpsClient(creds);
     }
 

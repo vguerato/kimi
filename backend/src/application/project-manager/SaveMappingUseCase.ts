@@ -15,6 +15,7 @@ export interface SaveMappingInput {
     skipStatuses: string[];
     delegatableTypes: string[];
     parentTypes: string[];
+    adapterType?: string;
 }
 
 export class SaveMappingUseCase {
@@ -32,7 +33,7 @@ export class SaveMappingUseCase {
             }
         }
 
-        const pmType = (await this.settingsRepo.findOne('project_manager')) ?? 'jira';
+        const pmType = input.adapterType ?? (await this.settingsRepo.findOne('project_manager')) ?? 'jira';
         const adapter = this.registry.adapters.get(pmType);
 
         if (!adapter) {

@@ -20,7 +20,7 @@
  *   Nenhuma outra mudança necessária.
  */
 
-import { inject, injectable } from 'tsyringe';
+import { injectable } from 'tsyringe';
 import { HumanMessage, SystemMessage, AIMessage, ToolMessage, BaseMessage } from '@langchain/core/messages';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -38,7 +38,6 @@ import { OpenAIProvider, AzureOpenAIProvider } from './providers/OpenAIProvider'
 import { AnthropicProvider } from './providers/AnthropicProvider';
 import { GeminiProvider } from './providers/GeminiProvider';
 import { OllamaProvider } from './providers/OllamaProvider';
-import { TOKENS } from '../../bootstrap/tokens';
 
 const log = logger.child({ module: 'llm-adapter' });
 
@@ -144,9 +143,7 @@ export function createDefaultRegistry(): LLMProviderRegistry {
 export class LangChainLLMAdapter implements ILLMPort {
     private readonly registry: LLMProviderRegistry;
 
-    constructor(
-        @inject(TOKENS.LLMProviderRegistry) registry?: LLMProviderRegistry,
-    ) {
+    constructor(registry?: LLMProviderRegistry) {
         this.registry = registry ?? createDefaultRegistry();
     }
 

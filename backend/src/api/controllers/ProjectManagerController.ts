@@ -56,13 +56,13 @@ export class ProjectManagerController {
   // ─── Provedor ativo ───────────────────────────────────────────────────────────
 
   /** GET /project-manager/config */
-  async config(_req: Request, res: Response): Promise<void> {
+  async config(req: Request, res: Response): Promise<void> {
     const config = await this.getPMConfig.execute();
     res.json(config);
   }
 
   /** GET /project-manager/mapping */
-  async mapping(_req: Request, res: Response): Promise<void> {
+  async mapping(req: Request, res: Response): Promise<void> {
     const mapping = await this.getMapping.execute();
     res.json({ mapping });
   }
@@ -103,17 +103,24 @@ export class ProjectManagerController {
 
   /** GET /project-manager/:provider/config */
   async providerConfig(req: Request, res: Response): Promise<void> {
-    await this.config(req, res);
+    const config = await this.getPMConfig.execute(String(req.params.provider));
+    res.json(config);
   }
 
   /** GET /project-manager/:provider/mapping */
   async providerMapping(req: Request, res: Response): Promise<void> {
-    await this.mapping(req, res);
+    const mapping = await this.getMapping.execute(String(req.params.provider));
+    res.json({ mapping });
   }
 
   /** POST /project-manager/:provider/mapping */
   async saveProviderMapping(req: Request, res: Response): Promise<void> {
-    await this.saveMap(req, res);
+    const body = req.body as SaveMappingRequestDto;
+    const mapping = await this.saveMapping.execute({
+      ...body,
+      adapterType: String(req.params.provider),
+    });
+    res.json({ success: true, mapping });
   }
 
   /** POST /project-manager/:provider/setup-webhook */

@@ -1,7 +1,8 @@
 /**
  * GetMappingUseCase — Retorna o mapeamento de status/tipos configurado.
  *
- * Agnóstico de provedor — usa o adapter ativo nas settings.
+ * Aceita um `adapterType` opcional para operar em um provedor específico.
+ * Se não fornecido, usa o provedor configurado nas settings.
  * Lança ServiceUnavailableError se nenhum adapter estiver registrado.
  */
 
@@ -16,8 +17,8 @@ export class GetMappingUseCase {
         private readonly registry: ProjectManagerRegistry,
     ) { }
 
-    async execute(): Promise<ProjectManagerMapping | null> {
-        const type = (await this.settingsRepo.findOne('project_manager')) ?? 'jira';
+    async execute(adapterType?: string): Promise<ProjectManagerMapping | null> {
+        const type = adapterType ?? (await this.settingsRepo.findOne('project_manager')) ?? 'jira';
         const adapter = this.registry.adapters.get(type);
 
         if (!adapter) {

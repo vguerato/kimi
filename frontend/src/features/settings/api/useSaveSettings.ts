@@ -23,7 +23,10 @@ export function useSaveSettings() {
                 if (m.prefix && m.url) acc[m.prefix] = m.url;
                 return acc;
             }, {});
-            const payload: AppSettings = { ...settings, repo_mappings: JSON.stringify(mappingObj) };
+            const payload: AppSettings = {
+                ...settings,
+                repo_mappings: JSON.stringify(mappingObj),
+            };
             return api.post<SaveSettingsResponse>('/api/settings', payload);
         },
         onMutate: () => toast.loading('Salvando...'),

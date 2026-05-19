@@ -1,19 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { JiraMapping } from '../types';
+import type { PMMapping } from '../types';
 
-interface JiraMappingResponse {
-    mapping: JiraMapping | null;
+interface MappingResponse {
+    mapping: PMMapping | null;
 }
 
-const getJiraMapping = (): Promise<JiraMappingResponse> =>
-    api.get<JiraMappingResponse>('/api/jira/mapping');
+const getPMMapping = (provider: string): Promise<MappingResponse> =>
+    api.get<MappingResponse>(`/api/project-manager/${provider}/mapping`);
 
-export const JIRA_MAPPING_QUERY_KEY = ['jira', 'mapping'] as const;
+export const pmMappingQueryKey = (provider: string) => ['project-manager', provider, 'mapping'] as const;
 
-export function useGetJiraMapping() {
+/** @deprecated Use pmMappingQueryKey instead */
+export const JIRA_MAPPING_QUERY_KEY = pmMappingQueryKey('jira');
+
+export function useGetPMMapping(provider: string) {
     return useQuery({
-        queryKey: JIRA_MAPPING_QUERY_KEY,
-        queryFn: getJiraMapping,
+        queryKey: pmMappingQueryKey(provider),
+        queryFn: () => getPMMapping(provider),
     });
+}
+
+/** @deprecated Use useGetPMMapping instead */
+export function useGetJiraMapping() {
+    return useGetPMMapping('jira');
 }

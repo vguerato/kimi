@@ -1,12 +1,18 @@
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import type { JiraConfig } from '../types';
+import type { PMConfig } from '../types';
 
-const getJiraConfig = (): Promise<JiraConfig> => api.get<JiraConfig>('/api/jira/config');
+const getPMConfig = (provider: string): Promise<PMConfig> =>
+    api.get<PMConfig>(`/api/project-manager/${provider}/config`);
 
-/** Lazy-loaded — only fetches when the user clicks "Carregar do Jira" */
-export function useLoadJiraConfig() {
+/** Lazy-loaded — only fetches when the user clicks "Carregar configuração". */
+export function useLoadPMConfig(provider: string) {
     return useMutation({
-        mutationFn: getJiraConfig,
+        mutationFn: () => getPMConfig(provider),
     });
+}
+
+/** @deprecated Use useLoadPMConfig instead */
+export function useLoadJiraConfig() {
+    return useLoadPMConfig('jira');
 }

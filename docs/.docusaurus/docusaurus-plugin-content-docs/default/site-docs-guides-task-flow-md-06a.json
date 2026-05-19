@@ -1,0 +1,27 @@
+{
+  "id": "guides/task-flow",
+  "title": "Fluxo de uma Tarefa",
+  "description": "Ciclo de vida completo de uma tarefa, desde o evento no gerenciador de projetos até o commit no repositório.",
+  "source": "@site/docs/guides/task-flow.md",
+  "sourceDirName": "guides",
+  "slug": "/guides/task-flow",
+  "permalink": "/guides/task-flow",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "task-flow",
+    "title": "Fluxo de uma Tarefa",
+    "sidebar_label": "Fluxo de uma Tarefa"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Início Rápido",
+    "permalink": "/guides/getting-started"
+  },
+  "next": {
+    "title": "Visão Geral",
+    "permalink": "/architecture/overview"
+  }
+}

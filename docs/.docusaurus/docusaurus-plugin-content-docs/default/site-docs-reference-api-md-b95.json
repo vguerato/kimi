@@ -1,0 +1,27 @@
+{
+  "id": "reference/api",
+  "title": "API REST",
+  "description": "Base URL//localhost:3001",
+  "source": "@site/docs/reference/api.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/api",
+  "permalink": "/reference/api",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "api",
+    "title": "API REST",
+    "sidebar_label": "API REST"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "VCS",
+    "permalink": "/integrations/vcs"
+  },
+  "next": {
+    "title": "Configuração",
+    "permalink": "/reference/configuration"
+  }
+}

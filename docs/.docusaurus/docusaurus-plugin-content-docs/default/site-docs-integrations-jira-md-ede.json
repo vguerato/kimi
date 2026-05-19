@@ -1,0 +1,27 @@
+{
+  "id": "integrations/jira",
+  "title": "Jira",
+  "description": "Configuração",
+  "source": "@site/docs/integrations/jira.md",
+  "sourceDirName": "integrations",
+  "slug": "/integrations/jira",
+  "permalink": "/integrations/jira",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "jira",
+    "title": "Jira",
+    "sidebar_label": "Jira"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Componentes",
+    "permalink": "/architecture/components"
+  },
+  "next": {
+    "title": "Azure DevOps",
+    "permalink": "/integrations/azure-devops"
+  }
+}

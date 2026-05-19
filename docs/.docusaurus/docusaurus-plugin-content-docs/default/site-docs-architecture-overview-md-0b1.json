@@ -1,0 +1,27 @@
+{
+  "id": "architecture/overview",
+  "title": "Visão Geral da Arquitetura",
+  "description": "O Kiro AI é construído sobre Clean Architecture com Domain-Driven Design (DDD). As dependências sempre apontam para dentro — infraestrutura depende do domínio, nunca o contrário.",
+  "source": "@site/docs/architecture/overview.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/overview",
+  "permalink": "/architecture/overview",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "overview",
+    "title": "Visão Geral da Arquitetura",
+    "sidebar_label": "Visão Geral"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Fluxo de uma Tarefa",
+    "permalink": "/guides/task-flow"
+  },
+  "next": {
+    "title": "Componentes",
+    "permalink": "/architecture/components"
+  }
+}

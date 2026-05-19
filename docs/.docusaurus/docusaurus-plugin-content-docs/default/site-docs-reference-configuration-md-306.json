@@ -1,0 +1,23 @@
+{
+  "id": "reference/configuration",
+  "title": "Configuração",
+  "description": "Variáveis de Ambiente",
+  "source": "@site/docs/reference/configuration.md",
+  "sourceDirName": "reference",
+  "slug": "/reference/configuration",
+  "permalink": "/reference/configuration",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "configuration",
+    "title": "Configuração",
+    "sidebar_label": "Configuração"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "API REST",
+    "permalink": "/reference/api"
+  }
+}

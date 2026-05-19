@@ -1,0 +1,27 @@
+{
+  "id": "integrations/llm-providers",
+  "title": "Provedores LLM",
+  "description": "O sistema detecta automaticamente o provedor ativo pelas variáveis de ambiente. Configure pelo menos um.",
+  "source": "@site/docs/integrations/llm-providers.md",
+  "sourceDirName": "integrations",
+  "slug": "/integrations/llm-providers",
+  "permalink": "/integrations/llm-providers",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "llm-providers",
+    "title": "Provedores LLM",
+    "sidebar_label": "Provedores LLM"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Azure DevOps",
+    "permalink": "/integrations/azure-devops"
+  },
+  "next": {
+    "title": "VCS",
+    "permalink": "/integrations/vcs"
+  }
+}

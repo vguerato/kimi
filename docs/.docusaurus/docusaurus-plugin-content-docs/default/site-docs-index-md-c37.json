@@ -1,0 +1,23 @@
+{
+  "id": "index",
+  "title": "Kiro AI",
+  "description": "Sistema de automação de tarefas de desenvolvimento orientado por agentes de IA. Recebe tarefas de gerenciadores de projetos (Jira, Azure DevOps), executa-as autonomamente usando LLMs, e commita o resultado diretamente no repositório via API VCS — sem clonar código localmente.",
+  "source": "@site/docs/index.md",
+  "sourceDirName": ".",
+  "slug": "/",
+  "permalink": "/",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "index",
+    "title": "Kiro AI",
+    "slug": "/"
+  },
+  "sidebar": "mainSidebar",
+  "next": {
+    "title": "Início Rápido",
+    "permalink": "/guides/getting-started"
+  }
+}

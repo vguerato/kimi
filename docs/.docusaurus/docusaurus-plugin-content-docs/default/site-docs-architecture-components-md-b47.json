@@ -1,0 +1,27 @@
+{
+  "id": "architecture/components",
+  "title": "Componentes",
+  "description": "TaskOrchestrator",
+  "source": "@site/docs/architecture/components.md",
+  "sourceDirName": "architecture",
+  "slug": "/architecture/components",
+  "permalink": "/architecture/components",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "components",
+    "title": "Componentes",
+    "sidebar_label": "Componentes"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Visão Geral",
+    "permalink": "/architecture/overview"
+  },
+  "next": {
+    "title": "Jira",
+    "permalink": "/integrations/jira"
+  }
+}

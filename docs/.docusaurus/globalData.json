@@ -1,0 +1,83 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/",
+      "versions": [
+        {
+          "name": "current",
+          "label": "Next",
+          "isLast": true,
+          "path": "/",
+          "mainDocId": "index",
+          "docs": [
+            {
+              "id": "architecture/components",
+              "path": "/architecture/components",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "architecture/overview",
+              "path": "/architecture/overview",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "guides/getting-started",
+              "path": "/guides/getting-started",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "guides/task-flow",
+              "path": "/guides/task-flow",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "index",
+              "path": "/",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "integrations/azure-devops",
+              "path": "/integrations/azure-devops",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "integrations/jira",
+              "path": "/integrations/jira",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "integrations/llm-providers",
+              "path": "/integrations/llm-providers",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "integrations/vcs",
+              "path": "/integrations/vcs",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "reference/api",
+              "path": "/reference/api",
+              "sidebar": "mainSidebar"
+            },
+            {
+              "id": "reference/configuration",
+              "path": "/reference/configuration",
+              "sidebar": "mainSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "mainSidebar": {
+              "link": {
+                "path": "/",
+                "label": "Início"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

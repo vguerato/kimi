@@ -1,0 +1,27 @@
+{
+  "id": "integrations/vcs",
+  "title": "VCS (Controle de Versão)",
+  "description": "O Kiro opera em modo API-first — repositórios nunca são clonados permanentemente. Todas as operações usam a API REST do provedor.",
+  "source": "@site/docs/integrations/vcs.md",
+  "sourceDirName": "integrations",
+  "slug": "/integrations/vcs",
+  "permalink": "/integrations/vcs",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "vcs",
+    "title": "VCS (Controle de Versão)",
+    "sidebar_label": "VCS"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Provedores LLM",
+    "permalink": "/integrations/llm-providers"
+  },
+  "next": {
+    "title": "API REST",
+    "permalink": "/reference/api"
+  }
+}

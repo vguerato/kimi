@@ -1,17 +1,11 @@
-version: '3.8'
-
-# ─── Kiro AI — Backend v2 ─────────────────────────────────────────────────────
+# ─── Kiro AI ──────────────────────────────────────────────────────────────────
 #
 # Serviços:
 #   redis    — Fila de tarefas (BullMQ)
 #   backend  — API + Worker (Node.js)
 #   frontend — Interface web (Nginx)
 #   weaviate — Memória semântica vetorial (opcional)
-#
-# Mudanças em relação ao v1:
-#   - Removidos volumes de /repos e /worktrees (não há mais clone local)
-#   - Adicionado Weaviate para memória semântica
-#   - Docker socket montado para containers efêmeros
+#   docs     — Documentação (Docusaurus)
 # ─────────────────────────────────────────────────────────────────────────────
 
 services:
@@ -40,9 +34,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - NODE_ENV=production
     volumes:
-      # Dados persistentes (SQLite, memória local)
       - backend_data:/app/data
-      # Docker socket para containers efêmeros
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       redis:
@@ -60,8 +52,6 @@ services:
       - backend
 
   # ─── Weaviate — Memória semântica vetorial ──────────────────────────────────
-  # Opcional: usado para busca semântica de contexto de projetos.
-  # Se não configurado, o sistema usa memória local (JSON).
   weaviate:
     image: semitechnologies/weaviate:1.24.1
     ports:
@@ -75,6 +65,16 @@ services:
       CLUSTER_HOSTNAME: 'node1'
     volumes:
       - weaviate_data:/var/lib/weaviate
+
+  # ─── Docusaurus — Documentação ───────────────────────────────────────────────
+  # Acesse em: http://localhost:3002
+  # Build estático servido via Nginx — sem dependência de npm em runtime.
+  docs:
+    build:
+      context: ./docs
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3002"
 
 volumes:
   redis_data:

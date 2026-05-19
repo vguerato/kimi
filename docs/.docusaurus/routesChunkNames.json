@@ -1,0 +1,102 @@
+{
+  "/__docusaurus/debug-5ff": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/config-5ba": {
+    "__comp": "__comp---theme-debug-config-23-a-2ff",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/content-a2b": {
+    "__comp": "__comp---theme-debug-contentba-8-ce7",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    },
+    "__props": "__props---docusaurus-debug-content-3-c-0-be2"
+  },
+  "/__docusaurus/debug/globalData-c3c": {
+    "__comp": "__comp---theme-debug-global-dataede-0fa",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/metadata-156": {
+    "__comp": "__comp---theme-debug-site-metadata-68-e-3d4",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/registry-88c": {
+    "__comp": "__comp---theme-debug-registry-679-501",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/__docusaurus/debug/routes-000": {
+    "__comp": "__comp---theme-debug-routes-946-699",
+    "__context": {
+      "plugin": "plugin---docusaurus-debugb-38-ad3"
+    }
+  },
+  "/-591": {
+    "__comp": "__comp---theme-docs-root-5-e-9-0b6",
+    "__context": {
+      "plugin": "plugin---aba-d70"
+    }
+  },
+  "/-423": {
+    "__comp": "__comp---theme-doc-version-roota-7-b-5de",
+    "__props": "__props---22-d-307"
+  },
+  "/-176": {
+    "__comp": "__comp---theme-doc-roota-94-67a"
+  },
+  "/architecture/components-1f7": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-componentsb-47-53f"
+  },
+  "/architecture/overview-fd5": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---architecture-overview-0-b-1-d38"
+  },
+  "/guides/getting-started-497": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---guides-getting-startedc-9-e-e62"
+  },
+  "/guides/task-flow-d82": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---guides-task-flow-06-a-fbf"
+  },
+  "/integrations/azure-devops-023": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---integrations-azure-devops-18-e-977"
+  },
+  "/integrations/jira-60e": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---integrations-jiraede-f81"
+  },
+  "/integrations/llm-providers-2f7": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---integrations-llm-providerse-23-4a6"
+  },
+  "/integrations/vcs-83f": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---integrations-vcs-154-3ab"
+  },
+  "/reference/api-ae4": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---reference-apib-95-b52"
+  },
+  "/reference/configuration-8a0": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---reference-configuration-306-48d"
+  },
+  "/-c02": {
+    "__comp": "__comp---theme-doc-item-178-a40",
+    "content": "content---c-37-d02"
+  }
+}

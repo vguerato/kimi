@@ -1,0 +1,27 @@
+{
+  "id": "integrations/azure-devops",
+  "title": "Azure DevOps",
+  "description": "Configuração",
+  "source": "@site/docs/integrations/azure-devops.md",
+  "sourceDirName": "integrations",
+  "slug": "/integrations/azure-devops",
+  "permalink": "/integrations/azure-devops",
+  "draft": false,
+  "unlisted": false,
+  "tags": [],
+  "version": "current",
+  "frontMatter": {
+    "id": "azure-devops",
+    "title": "Azure DevOps",
+    "sidebar_label": "Azure DevOps"
+  },
+  "sidebar": "mainSidebar",
+  "previous": {
+    "title": "Jira",
+    "permalink": "/integrations/jira"
+  },
+  "next": {
+    "title": "Provedores LLM",
+    "permalink": "/integrations/llm-providers"
+  }
+}

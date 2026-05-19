@@ -39,6 +39,8 @@ import { vcsRegistry } from '../infrastructure/vcs/VCSAdapterRegistry';
 import { ProjectManagerRegistry } from '../infrastructure/project-manager/ProjectManagerRegistry';
 import { JiraService } from '../infrastructure/project-manager/jira/JiraService';
 import { JiraAdapter } from '../infrastructure/project-manager/jira/JiraAdapter';
+import { AzureDevOpsService } from '../infrastructure/project-manager/azure-devops/AzureDevOpsService';
+import { AzureDevOpsAdapter } from '../infrastructure/project-manager/azure-devops/AzureDevOpsAdapter';
 
 // Orquestração
 import { ContextEngine } from '../orchestration/ContextEngine';
@@ -152,14 +154,19 @@ tsContainer.register(TOKENS.TaskOrchestrator, {
 
 tsContainer.register(TOKENS.JiraService, { useClass: JiraService });
 tsContainer.register(TOKENS.JiraAdapter, { useClass: JiraAdapter });
+tsContainer.register(TOKENS.AzureDevOpsService, { useClass: AzureDevOpsService });
+tsContainer.register(TOKENS.AzureDevOpsAdapter, { useClass: AzureDevOpsAdapter });
 
 // ─── Inicialização assíncrona ─────────────────────────────────────────────────
 
 async function initProjectManagerAdapters(): Promise<void> {
   const registry = tsContainer.resolve<ProjectManagerRegistry>(TOKENS.ProjectManagerRegistry);
   const jiraAdapter = tsContainer.resolve<JiraAdapter>(TOKENS.JiraAdapter);
+  const azureAdapter = tsContainer.resolve<AzureDevOpsAdapter>(TOKENS.AzureDevOpsAdapter);
+
   registry.register('jira', jiraAdapter);
-  log.info('Adapters de project manager registrados');
+  registry.register('azure-devops', azureAdapter);
+  log.info('Adapters de project manager registrados (jira, azure-devops)');
 }
 
 export async function initializeContainer(): Promise<void> {

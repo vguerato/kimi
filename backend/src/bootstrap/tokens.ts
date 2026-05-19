@@ -51,6 +51,8 @@ export const TOKENS = {
     // Project Manager
     JiraService: Symbol.for('JiraService'),
     JiraAdapter: Symbol.for('JiraAdapter'),
+    AzureDevOpsService: Symbol.for('AzureDevOpsService'),
+    AzureDevOpsAdapter: Symbol.for('AzureDevOpsAdapter'),
 } as const;
 
 /** Tipo utilitário para os valores dos tokens. */

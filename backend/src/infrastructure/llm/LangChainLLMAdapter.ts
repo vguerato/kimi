@@ -20,7 +20,7 @@
  *   Nenhuma outra mudança necessária.
  */
 
-import { injectable } from 'tsyringe';
+import { inject, injectable } from 'tsyringe';
 import { HumanMessage, SystemMessage, AIMessage, ToolMessage, BaseMessage } from '@langchain/core/messages';
 import { tool } from '@langchain/core/tools';
 import { z } from 'zod';
@@ -38,6 +38,7 @@ import { OpenAIProvider, AzureOpenAIProvider } from './providers/OpenAIProvider'
 import { AnthropicProvider } from './providers/AnthropicProvider';
 import { GeminiProvider } from './providers/GeminiProvider';
 import { OllamaProvider } from './providers/OllamaProvider';
+import { TOKENS } from '../../bootstrap/tokens';
 
 const log = logger.child({ module: 'llm-adapter' });
 
@@ -143,8 +144,8 @@ export function createDefaultRegistry(): LLMProviderRegistry {
 export class LangChainLLMAdapter implements ILLMPort {
     private readonly registry: LLMProviderRegistry;
 
-    constructor(registry?: LLMProviderRegistry) {
-        this.registry = registry ?? createDefaultRegistry();
+    constructor(@inject(TOKENS.LLMProviderRegistry) registry: LLMProviderRegistry) {
+        this.registry = registry;
     }
 
     get providerName(): string {
@@ -243,6 +244,6 @@ let _instance: LangChainLLMAdapter | null = null;
 
 /** Retorna o singleton do adapter LLM. Instanciado na primeira chamada. */
 export function getLLMAdapter(): LangChainLLMAdapter {
-    if (!_instance) _instance = new LangChainLLMAdapter();
+    if (!_instance) _instance = new LangChainLLMAdapter(createDefaultRegistry());
     return _instance;
 }

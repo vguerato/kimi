@@ -84,6 +84,12 @@ tsContainer.register(TOKENS.SettingsRepository, { useClass: TypeOrmSettingsRepos
 tsContainer.register(TOKENS.TaskQueue, { useClass: BullMqTaskQueue });
 tsContainer.register(TOKENS.Memory, { useClass: CompositeMemoryAdapter });
 tsContainer.register(TOKENS.ContainerRuntime, { useClass: DockerContainerRuntime });
+tsContainer.register(TOKENS.LLMProviderRegistry, {
+  useFactory: instanceCachingFactory(() => {
+    const { createDefaultRegistry } = require('../infrastructure/llm/LangChainLLMAdapter');
+    return createDefaultRegistry();
+  }),
+});
 tsContainer.register(TOKENS.LLM, { useClass: LangChainLLMAdapter });
 
 // ─── 3. VCS Adapter Resolver — useFactory (lógica de runtime) ────────────────
